@@ -1,77 +1,434 @@
-<!DOCTYPE html>
+А<!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>сайт закрытт</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A-Tools Aormio — клиент для шерифов и модераторов</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-soft: #11141c;
+    --card: #161a24;
+    --border: #232a3a;
+    --accent: #6d5cff;
+    --accent-2: #3b82f6;
+    --text: #e6e9f0;
+    --muted: #8b93a7;
+    --green: #34d399;
+    --warn: #fbbf24;
+    --red: #f87171;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(109, 92, 255, 0.18), transparent 60%),
+      radial-gradient(1000px 500px at 90% 0%, rgba(59, 130, 246, 0.12), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  header {
+    padding: 72px 0 40px;
+    text-align: center;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-soft);
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.4px;
+    margin-bottom: 22px;
+  }
+
+  .badge .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+  }
+
+  h1 {
+    font-size: clamp(34px, 6vw, 56px);
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent) 70%, var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .tagline {
+    margin-top: 14px;
+    font-size: 18px;
+    color: var(--muted);
+  }
+
+  .actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 26px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn:hover { transform: translateY(-2px); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    box-shadow: 0 8px 30px rgba(109, 92, 255, 0.35);
+  }
+
+  .btn-ghost {
+    background: var(--bg-soft);
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .btn-ghost:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 48px 0;
+  }
+
+  .feature {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .feature b {
+    display: block;
+    color: var(--text);
+    margin-bottom: 4px;
+    font-size: 15px;
+  }
+
+  .section-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    margin-bottom: 26px;
+  }
+
+  .faq {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 60px;
+  }
+
+  details {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+
+  details[open] { border-color: rgba(109, 92, 255, 0.5); }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    list-style: none;
+    user-select: none;
+  }
+
+  summary::-webkit-details-marker { display: none; }
+
+  summary .ic {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: rgba(109, 92, 255, 0.15);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  summary .chev {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+    color: var(--muted);
+  }
+
+  details[open] .chev { transform: rotate(180deg); }
+
+  .answer {
+    padding: 0 20px 18px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    margin: 0 20px 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .answer code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--accent-2);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .answer .note {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    color: var(--warn);
+    font-size: 14px;
+  }
+
+  .notice {
+    background: linear-gradient(135deg, rgba(248, 113, 113, 0.1), rgba(251, 191, 36, 0.06));
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 60px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .notice .em {
+    font-size: 22px;
+  }
+
+  .notice b { display: block; margin-bottom: 4px; }
+
+  .notice p { color: var(--muted); font-size: 15px; }
+
+  .notice code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--red);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+  }
+
+  .contact {
+    text-align: center;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 36px 24px;
+    margin-bottom: 60px;
+  }
+
+  .contact h2 { font-size: 22px; margin-bottom: 8px; }
+
+  .contact p { color: var(--muted); margin-bottom: 20px; }
+
+  .discord {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    background: #5865f2;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(88, 101, 242, 0.35);
+    transition: transform 0.15s ease;
+  }
+
+  .discord:hover { transform: translateY(-2px); }
+
+  footer {
+    text-align: center;
+    padding: 24px 0 48px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+
+  footer .upd {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  @media (max-width: 560px) {
+    .answer code { white-space: normal; word-break: break-all; }
+  }
+</style>
 </head>
 <body>
-    <div class="top-contact-bar">
-        <div class="container">
-            <div class="top-social-links">
-                <a href="https://t.me/FullStack_Universe" class="top-social-link"><i class="fab fa-telegram"></i> сайт закрытт</a>
-                <a href="https://www.youtube.com/@JDKsolv1x" class="top-social-link"><i class="fab fa-youtube"></i> сайт закрытт</a>
-                <a href="https://dzen.ru/solv1x" class="top-social-link"><i class="fab fa-yandex-international"></i> сайт закрытт</a>
-                <a href="https://github.com/solv1x" class="top-social-link"><i class="fab fa-github"></i> сайт закрытт</a>
-            </div>
-        </div>
+
+<header class="wrap">
+  <div class="badge"><span class="dot"></span>Статус клиента</div>
+  <h1>A-Tools <span style="background:none;-webkit-text-fill-color:var(--accent);">Aormio</span></h1>
+  <p class="tagline">Клиент для шерифов и модераторов: баны, муты и проверки — в пару кликов.</p>
+  <div class="actions">
+    <a class="btn btn-primary" href="#faq">Читать FAQ</a>
+    <a class="btn btn-ghost" href="#contact">Поддержка</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="features">
+    <div class="feature"><b>ChatTime</b>Время [мм:сс] перед сообщениями — удобно ловить флуд.</div>
+    <div class="feature"><b>ChatNotify</b>Звук при нарушении правил в чате.</div>
+    <div class="feature"><b>CopyNameChat</b>Копирование ников за Shift + ЛКМ.</div>
+    <div class="feature"><b>ClickPunishment</b>Наказания по клику на ник в чате.</div>
+    <div class="feature"><b>AutoMessageRevise</b>Готовые шаблоны на читы.</div>
+    <div class="feature"><b>DiscordRPC + TimeChanger</b>Статус в Discord и смена времени суток.</div>
+  </section>
+
+  <h2 class="section-title" id="faq">FAQ</h2>
+  <p class="section-sub">Частые вопросы о клиенте A-Tools Aormio</p>
+
+  <div class="faq">
+
+    <details open>
+      <summary><span class="ic">1</span> Для кого клиент?<span class="chev">▾</span></summary>
+      <div class="answer">
+        Для <b>шерифов и модераторов</b>, чтобы упростить баны, муты и проверки.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="ic">2</span> Что дают ChatTime и ChatNotify?<span class="chev">▾</span></summary>
+      <div class="answer">
+        <b>ChatTime</b> ставит время <code>[мм:сс]</code> перед сообщениями — удобно ловить флуд.<br />
+        <b>ChatNotify</b> производит звук, когда какой-нибудь игрок нарушает правила в чате.
+        <div class="note">⚠ Нужен конфиг (просить у меня). Команда: <code>/chatnotify</code></div>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="ic">3</span> Как копировать ники? (CopyNameChat)<span class="chev">▾</span></summary>
+      <div class="answer">
+        Нажмите <b>Shift + ЛКМ</b> по нику — он скопируется в чат.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="ic">4</span> Как работает ClickPunishment?<span class="chev">▾</span></summary>
+      <div class="answer">
+        Увидели, что человек нарушил — нажимаете на его ник в чате, и вылезает менюшка с действиями.
+        Нажимаете на пункт — и наказание выдано.
+        <div class="note">⚠ Команды нужно добавлять самому.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="ic">5</span> AutoMessageRevise — как отправить шаблон на читы?<span class="chev">▾</span></summary>
+      <div class="answer">
+        Используйте <code>/revise start &lt;ник&gt;</code> — функция автоматически отправит готовый шаблон.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="ic">6</span> DiscordRPC и TimeChanger?<span class="chev">▾</span></summary>
+      <div class="answer">
+        <b>DiscordRPC</b> показывает активность в Discord.<br />
+        <b>TimeChanger</b> (<code>/timechanger</code>) меняет время суток для комфорта.
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="ic">7</span> Клиент будет обновляться?<span class="chev">▾</span></summary>
+      <div class="answer">
+        Да, будут выходить обновления.
+      </div>
+    </details>
+
+  </div>
+
+  <div class="notice">
+    <span class="em">⚠️</span>
+    <div>
+      <b>Распространённая причина неработоспособности клиента</b>
+      <p>Несовместимость модов. Перед установкой проверьте список модов.</p>
     </div>
+  </div>
 
-    <header class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <img src="avatar.jpg" alt="Аватар" class="avatar" onerror="this.src='https://via.placeholder.com/200x200/2d3748/ffffff?text=Avatar'">
-                <h1 class="name">сайт закрытт</h1>
-                <p class="title">сайт закрытт</p>
-                <p class="description">сайт закрытт</p>
-            </div>
-        </div>
-    </header>
+  <section class="contact" id="contact">
+    <h2>Нужна помощь?</h2>
+    <p>По вопросам и багам клиента обращайтесь в Discord.</p>
+    <a class="discord" href="https://discord.com/users/978268569177575465" target="_blank" rel="noopener">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+      Написать в Discord
+    </a>
+  </section>
 
-    <section class="skills">
-        <div class="container">
-            <h2 class="section-title">сайт закрытт</h2>
-            <div class="skills-grid">
-                <div class="skill-card">
-                    <i class="fab fa-react"></i>
-                    <span>сайт закрытт</span>
-                </div>
-                <div class="skill-card">
-                    <i class="fab fa-js"></i>
-                    <span>сайт закрытт</span>
-                </div>
-                <div class="skill-card">
-                    <i class="fab fa-html5"></i>
-                    <span>сайт закрытт</span>
-                </div>
-                <div class="skill-card">
-                    <i class="fab fa-css3-alt"></i>
-                    <span>сайт закрытт</span>
-                </div>
-                <div class="skill-card">
-                    <i class="fab fa-python"></i>
-                    <span>сайт закрытт</span>
-                </div>
-                <div class="skill-card">
-                    <i class="fab fa-node-js"></i>
-                    <span>сайт закрытт</span>
-                </div>
-                <div class="skill-card">
-                    <i class="fab fa-git-alt"></i>
-                    <span>сайт закрытт</span>
-                </div>
-            </div>
-        </div>
-    </section>
+</main>
 
-    <script src="script.js"></script>
- 
-    <footer class="footer">
-        <div class="container">
-            <p class="copyright">bioquest 2026 - сайт закрытт</p>
-        </div>
-    </footer>
+<footer class="wrap">
+  <span class="upd">● Клиент поддерживается и обновляется</span><br />
+</footer>
+
 </body>
 </html>
