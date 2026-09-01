@@ -1,618 +1,1018 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>A-Tools Aormio — клиент для шерифов и модераторов</title>
-<style>
-  :root {
-    --bg: #0b0d12;
-    --bg-soft: #11141c;
-    --card: #161a24;
-    --border: #232a3a;
-    --accent: #6d5cff;
-    --accent-2: #3b82f6;
-    --text: #e6e9f0;
-    --muted: #8b93a7;
-    --green: #34d399;
-    --warn: #fbbf24;
-    --red: #f87171;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A-Tools Aormio — клиент для шерифов и модераторов</title>
+  <style>
+    /* ----- базовые сбросы и переменные ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    html {
+      scroll-behavior: smooth;
+    }
 
-  html { scroll-behavior: smooth; }
+    body {
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+      background: #000000; /* полностью черный */
+      color: #ececec;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-  body {
-    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
-    background:
-      radial-gradient(1200px 600px at 15% -10%, rgba(109, 92, 255, 0.18), transparent 60%),
-      radial-gradient(1000px 500px at 90% 0%, rgba(59, 130, 246, 0.12), transparent 55%),
-      var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    min-height: 100vh;
-  }
+    :root {
+      --bg: #000000;
+      --bg-soft: #0d0d0d;
+      --card: #141414;
+      --border: #222222;
+      --accent: #ff7b00;
+      --accent-glow: rgba(255, 123, 0, 0.3);
+      --accent-2: #ff5500;
+      --text: #f0f0f0;
+      --muted: #9a9a9a;
+      --green: #34d399;
+      --warn: #fbbf24;
+      --red: #f87171;
+    }
 
-  .wrap {
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
+    /* ----- КАНВАС ДЛЯ ЧАСТИЦ (поверх всего) ----- */
+    #particles-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none; /* чтобы клики проходили сквозь */
+    }
 
-  header {
-    padding: 72px 0 40px;
-    text-align: center;
-  }
+    /* ----- СПЛЕШ-ЗАСТАВКА (fullscreen + blur) ----- */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: opacity 0.8s ease, backdrop-filter 0.8s ease;
+      text-align: center;
+      padding: 24px;
+    }
 
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: var(--bg-soft);
-    color: var(--muted);
-    font-size: 13px;
-    letter-spacing: 0.4px;
-    margin-bottom: 22px;
-  }
+    #splash.hide {
+      opacity: 0;
+      pointer-events: none;
+      backdrop-filter: blur(0px);
+    }
 
-  .badge .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 8px var(--green);
-  }
+    #splash .splash-content {
+      position: relative;
+      z-index: 2;
+      max-width: 780px;
+    }
 
-  h1 {
-    font-size: clamp(34px, 6vw, 56px);
-    font-weight: 800;
-    letter-spacing: -1px;
-    background: linear-gradient(135deg, #fff 30%, var(--accent) 70%, var(--accent-2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
+    #splash h1 {
+      font-size: clamp(52px, 12vw, 110px);
+      font-weight: 900;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #fff 15%, var(--accent) 55%, var(--accent-2) 90%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      text-shadow: 0 0 60px rgba(255, 123, 0, 0.25);
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
 
-  .tagline {
-    margin-top: 14px;
-    font-size: 18px;
-    color: var(--muted);
-  }
+    #splash .sub {
+      font-size: clamp(18px, 3.5vw, 32px);
+      color: var(--muted);
+      font-weight: 300;
+      letter-spacing: 2px;
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
 
-  .actions {
-    margin-top: 30px;
-    display: flex;
-    gap: 14px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+    #splash .enter-btn {
+      display: inline-block;
+      padding: 16px 48px;
+      border-radius: 60px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 40px rgba(255, 123, 0, 0.4);
+      transition: transform 0.25s ease, box-shadow 0.3s ease;
+      letter-spacing: 1px;
+    }
 
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 26px;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 600;
-    text-decoration: none;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    background: var(--bg-soft);
-    border-color: var(--border);
-    color: var(--text);
-  }
+    #splash .enter-btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 0 60px rgba(255, 123, 0, 0.65);
+    }
 
-  .btn:hover { transform: translateY(-2px); }
+    #splash .splash-footer {
+      position: absolute;
+      bottom: 32px;
+      color: var(--muted);
+      font-size: 14px;
+      letter-spacing: 1px;
+      opacity: 0.5;
+      z-index: 2;
+    }
 
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 8px 30px rgba(109, 92, 255, 0.35);
-  }
+    /* ----- ОСНОВНОЙ КОНТЕНТ (поверх канваса) ----- */
+    .main-content {
+      position: relative;
+      z-index: 1;
+    }
 
-  .btn-primary:hover { box-shadow: 0 8px 30px rgba(109, 92, 255, 0.55); }
+    .wrap {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
 
-  .btn-ghost {
-    background: var(--bg-soft);
-    border-color: var(--border);
-    color: var(--text);
-  }
+    header {
+      padding: 56px 0 32px;
+      text-align: center;
+    }
 
-  .btn-ghost:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(13, 13, 13, 0.7);
+      backdrop-filter: blur(4px);
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.4px;
+      margin-bottom: 20px;
+    }
 
-  .features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin: 48px 0;
-  }
+    .badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
 
-  .feature {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    font-size: 14px;
-    color: var(--muted);
-  }
+    h1.main-title {
+      font-size: clamp(34px, 6vw, 56px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 20%, var(--accent) 60%, var(--accent-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
 
-  .feature b {
-    display: block;
-    color: var(--text);
-    margin-bottom: 4px;
-    font-size: 15px;
-  }
+    .tagline {
+      margin-top: 12px;
+      font-size: 18px;
+      color: var(--muted);
+    }
 
-  .section-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
+    .actions {
+      margin-top: 28px;
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
 
-  .section-sub {
-    color: var(--muted);
-    margin-bottom: 26px;
-  }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 26px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s;
+      background: rgba(13, 13, 13, 0.8);
+      backdrop-filter: blur(4px);
+      border-color: var(--border);
+      color: var(--text);
+    }
 
-  .faq {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 60px;
-  }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
 
-  .faq details, .rules-block details {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    transition: border-color 0.2s ease;
-  }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 28px rgba(255, 123, 0, 0.35);
+    }
 
-  .faq details[open], .rules-block details[open] { border-color: rgba(109, 92, 255, 0.5); }
+    .btn-primary:hover {
+      box-shadow: 0 8px 32px rgba(255, 123, 0, 0.6);
+    }
 
-  summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 18px 20px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 16px;
-    list-style: none;
-    user-select: none;
-  }
+    .btn-ghost {
+      background: rgba(13, 13, 13, 0.8);
+      backdrop-filter: blur(4px);
+      border-color: var(--border);
+      color: var(--text);
+    }
 
-  summary::-webkit-details-marker { display: none; }
+    .btn-ghost:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
 
-  summary .ic {
-    flex-shrink: 0;
-    width: 22px;
-    height: 22px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 7px;
-    background: rgba(109, 92, 255, 0.15);
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 13px;
-  }
+    /* вкладки */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin: 32px 0 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+      flex-wrap: wrap;
+    }
 
-  summary .chev {
-    margin-left: auto;
-    transition: transform 0.2s ease;
-    color: var(--muted);
-  }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 10px 22px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 10px 10px 0 0;
+      cursor: pointer;
+      transition: 0.2s;
+      border-bottom: 3px solid transparent;
+    }
 
-  details[open] .chev { transform: rotate(180deg); }
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 123, 0, 0.04);
+    }
 
-  .answer {
-    padding: 0 20px 18px;
-    color: var(--muted);
-    border-top: 1px solid var(--border);
-    padding-top: 14px;
-    margin: 0 20px 0;
-    padding-left: 0;
-    padding-right: 0;
-  }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(255, 123, 0, 0.06);
+    }
 
-  .answer code {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--accent-2);
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-family: Consolas, "Courier New", monospace;
-    font-size: 13px;
-    white-space: nowrap;
-  }
+    .tab-content {
+      display: none;
+      animation: fade 0.25s ease;
+    }
 
-  .answer .note {
-    display: flex;
-    gap: 10px;
-    margin-top: 12px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: rgba(251, 191, 36, 0.08);
-    border: 1px solid rgba(251, 191, 36, 0.25);
-    color: var(--warn);
-    font-size: 14px;
-  }
+    .tab-content.active {
+      display: block;
+    }
 
-  .notice {
-    background: linear-gradient(135deg, rgba(248, 113, 113, 0.1), rgba(251, 191, 36, 0.06));
-    border: 1px solid rgba(248, 113, 113, 0.3);
-    border-radius: 16px;
-    padding: 20px 24px;
-    margin-bottom: 60px;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-  }
+    @keyframes fade {
+      0% {
+        opacity: 0.4;
+        transform: translateY(6px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-  .notice .em {
-    font-size: 22px;
-  }
+    /* фичи */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 32px 0 40px;
+    }
 
-  .notice b { display: block; margin-bottom: 4px; }
+    .feature {
+      background: rgba(13, 13, 13, 0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 14px;
+      color: var(--muted);
+    }
 
-  .notice p { color: var(--muted); font-size: 15px; }
+    .feature b {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
 
-  .notice code {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--red);
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-family: Consolas, "Courier New", monospace;
-    font-size: 13px;
-  }
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
 
-  .rules-block {
-    margin-bottom: 48px;
-  }
+    .section-sub {
+      color: var(--muted);
+      margin-bottom: 26px;
+    }
 
-  .rules-block .answer {
-    max-height: 600px;
-    overflow-y: auto;
-  }
+    /* FAQ */
+    .faq {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
 
-  .rules-block .answer::-webkit-scrollbar {
-    width: 4px;
-    background: var(--bg);
-  }
+    .faq details,
+    .rules-block details {
+      background: rgba(13, 13, 13, 0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
 
-  .rules-block .answer::-webkit-scrollbar-thumb {
-    background: var(--accent);
-    border-radius: 4px;
-  }
+    .faq details[open],
+    .rules-block details[open] {
+      border-color: var(--accent);
+    }
 
-  .rules-content {
-    padding-right: 4px;
-  }
+    summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      list-style: none;
+      user-select: none;
+    }
 
-  .rules-content h3 {
-    color: var(--text);
-    font-size: 18px;
-    margin: 18px 0 6px;
-  }
+    summary::-webkit-details-marker {
+      display: none;
+    }
 
-  .rules-content h3:first-of-type {
-    margin-top: 0;
-  }
+    summary .ic {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(255, 123, 0, 0.15);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 13px;
+    }
 
-  .rules-content ul, .rules-content p {
-    margin-bottom: 10px;
-    padding-left: 4px;
-  }
+    summary .chev {
+      margin-left: auto;
+      transition: transform 0.2s ease;
+      color: var(--muted);
+    }
 
-  .rules-content li {
-    list-style: none;
-    padding: 2px 0 2px 18px;
-    position: relative;
-  }
+    details[open] .chev {
+      transform: rotate(180deg);
+    }
 
-  .rules-content li::before {
-    content: "•";
-    position: absolute;
-    left: 0;
-    color: var(--accent);
-  }
+    .answer {
+      padding: 0 20px 18px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      margin: 0 20px 0;
+      padding-left: 0;
+      padding-right: 0;
+    }
 
-  .rules-content .sub {
-    padding-left: 24px;
-  }
+    .answer code {
+      background: #000;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      white-space: nowrap;
+    }
 
-  .rules-content .sub li::before {
-    content: "—";
-    color: var(--muted);
-  }
+    .answer .note {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(255, 123, 0, 0.08);
+      border: 1px solid rgba(255, 123, 0, 0.25);
+      color: var(--warn);
+      font-size: 14px;
+    }
 
-  .rules-content .highlight {
-    color: var(--warn);
-  }
+    .notice {
+      background: rgba(255, 123, 0, 0.06);
+      border: 1px solid rgba(255, 123, 0, 0.25);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin: 40px 0 40px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      backdrop-filter: blur(4px);
+    }
 
-  .rules-content .important {
-    background: rgba(248, 113, 113, 0.08);
-    border-left: 3px solid var(--red);
-    padding: 10px 14px;
-    border-radius: 0 8px 8px 0;
-    margin: 8px 0 12px;
-  }
+    .notice .em {
+      font-size: 22px;
+    }
 
-  .contact {
-    text-align: center;
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 36px 24px;
-    margin-bottom: 60px;
-  }
+    .notice b {
+      display: block;
+      margin-bottom: 4px;
+    }
 
-  .contact h2 { font-size: 22px; margin-bottom: 8px; }
+    .notice p {
+      color: var(--muted);
+      font-size: 15px;
+    }
 
-  .contact p { color: var(--muted); margin-bottom: 20px; }
+    .notice code {
+      background: #000;
+      border: 1px solid var(--border);
+      color: var(--red);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+    }
 
-  .discord {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 24px;
-    border-radius: 12px;
-    background: #5865f2;
-    color: #fff;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: 0 8px 24px rgba(88, 101, 242, 0.35);
-    transition: transform 0.15s ease;
-  }
+    /* правила */
+    .rules-block {
+      margin-bottom: 20px;
+    }
 
-  .discord:hover { transform: translateY(-2px); }
+    .rules-block .answer {
+      max-height: 600px;
+      overflow-y: auto;
+    }
 
-  footer {
-    text-align: center;
-    padding: 24px 0 48px;
-    color: var(--muted);
-    font-size: 13px;
-    border-top: 1px solid var(--border);
-  }
+    .rules-block .answer::-webkit-scrollbar {
+      width: 4px;
+      background: #000;
+    }
 
-  footer .upd {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    color: var(--green);
-    font-weight: 600;
-  }
+    .rules-block .answer::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 4px;
+    }
 
-  @media (max-width: 560px) {
-    .answer code { white-space: normal; word-break: break-all; }
-    .rules-block .answer { max-height: 400px; }
-  }
-</style>
+    .rules-content {
+      padding-right: 4px;
+    }
+
+    .rules-content h3 {
+      color: var(--text);
+      font-size: 18px;
+      margin: 18px 0 6px;
+    }
+
+    .rules-content h3:first-of-type {
+      margin-top: 0;
+    }
+
+    .rules-content ul,
+    .rules-content p {
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+
+    .rules-content li {
+      list-style: none;
+      padding: 2px 0 2px 18px;
+      position: relative;
+    }
+
+    .rules-content li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+
+    .rules-content .sub {
+      padding-left: 24px;
+    }
+
+    .rules-content .sub li::before {
+      content: "—";
+      color: var(--muted);
+    }
+
+    .rules-content .highlight {
+      color: var(--accent);
+    }
+
+    .rules-content .important {
+      background: rgba(255, 123, 0, 0.08);
+      border-left: 3px solid var(--accent);
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      margin: 8px 0 12px;
+    }
+
+    .contact {
+      text-align: center;
+      background: rgba(13, 13, 13, 0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 36px 24px;
+      margin: 40px 0 60px;
+    }
+
+    .contact h2 {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .contact p {
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .discord {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      background: #5865f2;
+      color: #fff;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(88, 101, 242, 0.35);
+      transition: transform 0.15s ease;
+    }
+
+    .discord:hover {
+      transform: translateY(-2px);
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px 0 48px;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    footer .upd {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    @media (max-width: 560px) {
+      .answer code {
+        white-space: normal;
+        word-break: break-all;
+      }
+      .rules-block .answer {
+        max-height: 400px;
+      }
+      .tabs {
+        justify-content: center;
+      }
+      .tab-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+      #splash .enter-btn {
+        padding: 14px 32px;
+        font-size: 17px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header class="wrap">
-  <div class="badge"><span class="dot"></span>Статус клиента</div>
-  <h1>A-Tools <span style="background:none;-webkit-text-fill-color:var(--accent);">Aormio</span></h1>
-  <p class="tagline">Клиент для шерифов и модераторов: баны, муты и проверки — в пару кликов.</p>
-  <div class="actions">
-    <a class="btn btn-primary" href="#faq">Читать FAQ</a>
-    <a class="btn btn-ghost" href="#contact">Поддержка</a>
-  </div>
-</header>
+  <!-- ====== КАНВАС ДЛЯ ЧАСТИЦ ====== -->
+  <canvas id="particles-canvas"></canvas>
 
-<main class="wrap">
-
-  <section class="features">
-    <div class="feature"><b>ChatTime</b>Время [мм:сс] перед сообщениями — удобно ловить флуд.</div>
-    <div class="feature"><b>ChatNotify</b>Звук при нарушении правил в чате.</div>
-    <div class="feature"><b>CopyNameChat</b>Копирование ников за Shift + ЛКМ.</div>
-    <div class="feature"><b>ClickPunishment</b>Наказания по клику на ник в чате.</div>
-    <div class="feature"><b>AutoMessageRevise</b>Готовые шаблоны на читы.</div>
-    <div class="feature"><b>DiscordRPC + TimeChanger</b>Статус в Discord и смена времени суток.</div>
-  </section>
-
-  <h2 class="section-title" id="faq">FAQ</h2>
-  <p class="section-sub">Частые вопросы о клиенте A-Tools Aormio</p>
-
-  <div class="faq">
-
-    <details open>
-      <summary><span class="ic">1</span> Для кого клиент?<span class="chev">▾</span></summary>
-      <div class="answer">
-        Для <b>шерифов и модераторов</b>, чтобы упростить баны, муты и проверки.
-      </div>
-    </details>
-
-    <details>
-      <summary><span class="ic">2</span> Что дают ChatTime и ChatNotify?<span class="chev">▾</span></summary>
-      <div class="answer">
-        <b>ChatTime</b> ставит время <code>[мм:сс]</code> перед сообщениями — удобно ловить флуд.<br />
-        <b>ChatNotify</b> производит звук, когда какой-нибудь игрок нарушает правила в чате.
-        <div class="note">⚠ Нужен конфиг (просить у меня). Команда: <code>/chatnotify</code></div>
-      </div>
-    </details>
-
-    <details>
-      <summary><span class="ic">3</span> Как копировать ники? (CopyNameChat)<span class="chev">▾</span></summary>
-      <div class="answer">
-        Нажмите <b>Shift + ЛКМ</b> по нику — он скопируется в чат.
-      </div>
-    </details>
-
-    <details>
-      <summary><span class="ic">4</span> Как работает ClickPunishment?<span class="chev">▾</span></summary>
-      <div class="answer">
-        Увидели, что человек нарушил — нажимаете на его ник в чате, и вылезает менюшка с действиями.
-        Нажимаете на пункт — и наказание выдано.
-        <div class="note">⚠ Команды нужно добавлять самому.</div>
-      </div>
-    </details>
-
-    <details>
-      <summary><span class="ic">5</span> AutoMessageRevise — как отправить шаблон на читы?<span class="chev">▾</span></summary>
-      <div class="answer">
-        Используйте <code>/revise start &lt;ник&gt;</code> — функция автоматически отправит готовый шаблон.
-      </div>
-    </details>
-
-    <details>
-      <summary><span class="ic">6</span> DiscordRPC и TimeChanger?<span class="chev">▾</span></summary>
-      <div class="answer">
-        <b>DiscordRPC</b> показывает активность в Discord.<br />
-        <b>TimeChanger</b> (<code>/timechanger</code>) меняет время суток для комфорта.
-      </div>
-    </details>
-
-    <details>
-      <summary><span class="ic">7</span> Клиент будет обновляться?<span class="chev">▾</span></summary>
-      <div class="answer">
-        Да, будут выходить обновления.
-      </div>
-    </details>
-
+  <!-- ====== FULLSCREEN SPLASH С BLUR ====== -->
+  <div id="splash" role="dialog" aria-label="Приветственная заставка">
+    <div class="splash-content">
+      <h1>A-Tools Aormio</h1>
+      <div class="sub">клиент для шерифов и модераторов</div>
+      <button class="enter-btn" id="enterBtn">ВОЙТИ</button>
+    </div>
+    <div class="splash-footer">✦ нажмите, чтобы продолжить ✦</div>
   </div>
 
-  <!-- НОВЫЙ РАЗДЕЛ: ПРАВИЛА СЕРВЕРА -->
-  <h2 class="section-title" style="margin-top: 20px;">Правила сервера mc.aormio.ru</h2>
-  <p class="section-sub">Ознакомьтесь с правилами проекта перед игрой.</p>
+  <!-- ====== ОСНОВНОЙ КОНТЕНТ ====== -->
+  <div class="main-content">
+    <header class="wrap">
+      <div class="badge"><span class="dot"></span>Статус клиента</div>
+      <h1 class="main-title">A-Tools <span style="background:none;-webkit-text-fill-color:var(--accent);">Aormio</span></h1>
+      <p class="tagline">Клиент для шерифов и модераторов: баны, муты и проверки — в пару кликов.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#contact">Поддержка</a>
+        <a class="btn btn-ghost" href="#features">Возможности</a>
+      </div>
+    </header>
 
-  <div class="rules-block">
-    <details>
-      <summary>
-        <span class="ic">📋</span> Посмотреть правила
-        <span class="chev">▾</span>
-      </summary>
-      <div class="answer">
-        <div class="rules-content">
-          <p style="color: var(--muted); margin-bottom: 12px; font-size: 14px;"><span class="highlight">⚠</span> Покупая услугу на сайте (aormio.ru) или посещая наш игровой сервер, вы автоматически соглашаетесь со всеми правилами и условиями проекта.</p>
+    <main class="wrap">
 
-          <h3>✅ Общие</h3>
-          <ul>
-            <li><strong>1.0.</strong> Покупая услугу на сайте или посещая сервер, вы соглашаетесь с правилами.</li>
-            <li><strong>1.1.</strong> Администрация вправе заблокировать вас без указания причины и без доказательства.</li>
-            <li><strong>1.2.</strong> Администрация вправе сама выбирать срок и вид наказания.</li>
-            <li><strong>1.3.</strong> Администрация вправе изменять или добавлять правила в любой момент.</li>
-            <li><strong>1.4.</strong> Администрация не возвращает утерянное в игровых или технических моментах.</li>
-            <li><strong>1.5.</strong> Деньги на привилегии — добровольное пожертвование на развитие.</li>
-            <li><strong>1.6.</strong> Деньги за донат не возвращаются.</li>
-            <li><strong>1.7.</strong> Незнание правил не освобождает от ответственности.</li>
-            <li><strong>1.8.</strong> Модерация/Администрация может вызвать на онлайн-проверку устройства (AnyDesk, Everything, Shellbag, Process Hacker 2, Journal Trace и др.).</li>
-          </ul>
+      <!-- Вкладки -->
+      <div class="tabs" id="tabHeaders">
+        <button class="tab-btn active" data-tab="faqTab"> FAQ</button>
+        <button class="tab-btn" data-tab="rulesTab"> Правила</button>
+      </div>
 
-          <h3>✅ Аккаунт</h3>
-          <ul>
-            <li><strong>2.0.</strong> Запрещено использовать ник, схожий с администрацией. <span class="highlight">(Блокировка 30 дней)</span></li>
-            <li><strong>2.1.</strong> Запрещено продавать/отдавать аккаунт, валюту или предметы за реальные деньги. <span class="highlight">(Снятие привилегии + блокировка 30 дней)</span></li>
-            <li><strong>2.2.</strong> Запрещено распространять пароли и данные аккаунтов. <span class="highlight">(Блокировка по IP 30 дней)</span></li>
-            <li><strong>2.3.</strong> Администрация вправе заблокировать твинки, если нарушен пункт с основного аккаунта. <span class="highlight">(По п. 1.2)</span></li>
-          </ul>
+      <!-- Содержимое вкладок -->
+      <div id="faqTab" class="tab-content active">
+        <section>
+          <h2 class="section-title">Частые вопросы</h2>
+          <p class="section-sub">Всё, что нужно знать о клиенте A-Tools Aormio</p>
 
-          <h3>✅ Чат / Общение</h3>
-          <ul>
-            <li><strong>3.0.</strong> Запрещено оскорблять игроков. <span class="highlight">(Мут 15 мин – 10 дней)</span></li>
-            <li><strong>3.1.</strong> Запрещено оскорблять администрацию. <span class="highlight">(Мут 15 мин – 10 дней)</span></li>
-            <li><strong>3.2.</strong> Запрещено спамить/флудить. <span class="highlight">(Мут 10 мин – 5 дней)</span></li>
-            <li><strong>3.3.</strong> Запрещено рекламировать другие сервера. <span class="highlight">(Мут по IP 10 дней)</span></li>
-            <li><strong>3.4.</strong> Запрещено выманивать пароли обманом. <span class="highlight">(Блокировка 15 дней)</span></li>
-            <li><strong>3.5.</strong> Запрещено выпрашивать у администрации. <span class="highlight">(Мут 1 час)</span></li>
-            <li><strong>3.6.</strong> Запрещено распространять неверную информацию о проекте. <span class="highlight">(По п. 1.2)</span></li>
-            <li><strong>3.7.</strong> Запрещён расизм и смежные темы. <span class="highlight">(Мут 1–10 дней)</span></li>
-            <li><strong>3.8.</strong> Запрещено распространять информацию о багах/дюпах. <span class="highlight">(Мут 1 час или блокировка 30 дней)</span></li>
-            <li><strong>3.9.</strong> Запрещено разжигать конфликт между народами. <span class="highlight">(Мут 1 час или п. 1.2)</span></li>
-            <li><strong>3.9.1.</strong> Запрещено обсуждение политики в негативном контексте. <span class="highlight">(Мут 1 час)</span></li>
-            <li><strong>3.9.2.</strong> Признание в использовании стороннего ПО в чате — основание для блокировки. <span class="highlight">(По п. 1.2)</span></li>
-            <li><strong>3.9.3.</strong> Запрещено распространение, реклама, упоминание стороннего ПО. <span class="highlight">(По п. 1.2)</span></li>
-          </ul>
+          <div class="faq">
+            <details open>
+              <summary><span class="ic">1</span> Для кого клиент?<span class="chev">▾</span></summary>
+              <div class="answer">
+                Для <b>шерифов и модераторов</b>, чтобы упростить баны, муты и проверки.
+              </div>
+            </details>
 
-          <h3>✅ Игровой процесс</h3>
-          <div class="important">
-            <strong>🚫 ЗАПРЕЩЕНЫ ЛЮБЫЕ ЧИТ-МОДИФИКАЦИИ С ФУНКЦИЯМИ:</strong>
-            <ul style="margin-top: 6px;">
-              <li>Reach/HitBox</li>
-              <li>Criticals</li>
-              <li>AutoTotem</li>
-              <li>AutoJumpReset</li>
-              <li>TriggerBot / AutoAttack (исключение: не реагирует на игроков)</li>
-              <li>AutoPot</li>
-              <li>AimAssist</li>
-              <li>Killaura</li>
-              <li>AutoShift</li>
-              <li>FakeLag</li>
-              <li>Velocity / AntiKnockBack</li>
-              <li>Modified Packets</li>
-              <li>Any Movement Function</li>
-              <li>Any Other Cheat Function</li>
-              <li>Любые функции, автоматизирующие взаимодействие с инвентарём</li>
-            </ul>
+            <details>
+              <summary><span class="ic">2</span> Что дают ChatTime и ChatNotify?<span class="chev">▾</span></summary>
+              <div class="answer">
+                <b>ChatTime</b> ставит время <code>[мм:сс]</code> перед сообщениями — удобно ловить флуд.<br />
+                <b>ChatNotify</b> производит звук, когда игрок нарушает правила в чате.
+                <div class="note">⚠ Нужен конфиг (просить у меня). Команда: <code>/chatnotify</code></div>
+              </div>
+            </details>
+
+            <details>
+              <summary><span class="ic">3</span> Как копировать ники? (CopyNameChat)<span class="chev">▾</span></summary>
+              <div class="answer">
+                Нажмите <b>Shift + ЛКМ</b> по нику — он скопируется в чат.
+              </div>
+            </details>
+
+            <details>
+              <summary><span class="ic">4</span> Как работает ClickPunishment?<span class="chev">▾</span></summary>
+              <div class="answer">
+                Нажимаете на ник нарушителя в чате → появляется меню с действиями. Выбираете пункт — наказание выдано.
+                <div class="note">⚠ Команды нужно добавлять самому.</div>
+              </div>
+            </details>
+
+            <details>
+              <summary><span class="ic">5</span> AutoMessageRevise — как отправить шаблон?<span class="chev">▾</span></summary>
+              <div class="answer">
+                Используйте <code>/revise start &lt;ник&gt;</code> — функция автоматически отправит готовый шаблон.
+              </div>
+            </details>
+
+            <details>
+              <summary><span class="ic">6</span> DiscordRPC и TimeChanger?<span class="chev">▾</span></summary>
+              <div class="answer">
+                <b>DiscordRPC</b> показывает активность в Discord.<br />
+                <b>TimeChanger</b> (<code>/timechanger</code>) меняет время суток для комфорта.
+              </div>
+            </details>
+
+            <details>
+              <summary><span class="ic">7</span> Клиент будет обновляться?<span class="chev">▾</span></summary>
+              <div class="answer">
+                Да, будут выходить обновления.
+              </div>
+            </details>
           </div>
+        </section>
+      </div>
 
-          <p><strong>🚫 ОБЯЗАТЕЛЬНЫЕ СЛУЖБЫ WINDOWS:</strong><br>
-          Sysmain • Diagtrack • PcaSvc • DPS • Eventlog • AppInfo • BAM • Dusmsv • Cdpusersvc</p>
+      <div id="rulesTab" class="tab-content">
+        <section>
+          <h2 class="section-title">Правила сервера mc.aormio.ru</h2>
+          <p class="section-sub">Ознакомьтесь с правилами проекта перед игрой.</p>
 
-          <p><strong>🖱️ МАКРОСЫ И УТИЛИТЫ:</strong> запрещены (автокликеры и аналоги). Исключения — по согласованию с администрацией.</p>
+          <div class="rules-block">
+            <details>
+              <summary>
+                <span class="ic"></span> Посмотреть правила
+                <span class="chev">▾</span>
+              </summary>
+              <div class="answer">
+                <div class="rules-content">
+                  <p style="color: var(--muted); margin-bottom: 12px; font-size: 14px;"><span class="highlight">⚠</span> Покупая услугу на сайте (aormio.ru) или посещая наш игровой сервер, вы автоматически соглашаетесь со всеми правилами и условиями проекта.</p>
 
-          <p><strong>🌐 НАСТРОЙКИ СЕТИ:</strong> запрещены сторонние настройки, влияющие на честность соединения. Разрешены только программы оптимизации маршрута (например, ExitLag) для снижения пинга без нарушения баланса. <span class="highlight">(Блокировка от 15 дней или по IP)</span></p>
+                  <h3>✅ Общие</h3>
+                  <ul>
+                    <li><strong>1.0.</strong> Покупая услугу на сайте или посещая сервер, вы соглашаетесь с правилами.</li>
+                    <li><strong>1.1.</strong> Администрация вправе заблокировать вас без указания причины и без доказательства.</li>
+                    <li><strong>1.2.</strong> Администрация вправе сама выбирать срок и вид наказания.</li>
+                    <li><strong>1.3.</strong> Администрация вправе изменять или добавлять правила в любой момент.</li>
+                    <li><strong>1.4.</strong> Администрация не возвращает утерянное в игровых или технических моментах.</li>
+                    <li><strong>1.5.</strong> Деньги на привилегии — добровольное пожертвование на развитие.</li>
+                    <li><strong>1.6.</strong> Деньги за донат не возвращаются.</li>
+                    <li><strong>1.7.</strong> Незнание правил не освобождает от ответственности.</li>
+                    <li><strong>1.8.</strong> Модерация/Администрация может вызвать на онлайн-проверку устройства (AnyDesk, Everything, Shellbag, Process Hacker 2, Journal Trace и др.).</li>
+                  </ul>
 
-          <ul>
-            <li><strong>4.0.1.</strong> Хранение читов также карается. <span class="highlight">(Блокировка от 15 дней)</span></li>
-            <li><strong>4.0.2.</strong> Если у тимейта обнаружено стороннее ПО — администрация вправе заблокировать вас за соучастие. <span class="highlight">(Блокировка от 5 дней)</span></li>
-            <li><strong>4.1.</strong> Запрещено строительство лаг-машин. <span class="highlight">(По п. 1.2)</span></li>
-            <li><strong>4.2.</strong> Запрещено использование уязвимостей (дюпы, баги). <span class="highlight">(По п. 1.2)</span></li>
-            <li><strong>4.3.</strong> Соблюдайте максимальное количество игроков в команде (указано в описании режима). <span class="highlight">(Блокировка всех участников от 5 дней)</span></li>
-          </ul>
+                  <h3>✅ Аккаунт</h3>
+                  <ul>
+                    <li><strong>2.0.</strong> Запрещено использовать ник, схожий с администрацией. <span class="highlight">(Блокировка 30 дней)</span></li>
+                    <li><strong>2.1.</strong> Запрещено продавать/отдавать аккаунт, валюту или предметы за реальные деньги. <span class="highlight">(Снятие привилегии + блокировка 30 дней)</span></li>
+                    <li><strong>2.2.</strong> Запрещено распространять пароли и данные аккаунтов. <span class="highlight">(Блокировка по IP 30 дней)</span></li>
+                    <li><strong>2.3.</strong> Администрация вправе заблокировать твинки, если нарушен пункт с основного аккаунта. <span class="highlight">(По п. 1.2)</span></li>
+                  </ul>
 
-          <h3>✅ Другая информация</h3>
-          <ul>
-            <li><strong>5.0.</strong> Восстановить аккаунт можно бесплатно, если он привязан к ВК.</li>
-            <li><strong>5.1.</strong> Донат покупается только на официальном сайте — <a href="https://aormio.net/" target="_blank" style="color: var(--accent);">https://aormio.net/</a></li>
-            <li><strong>5.2.</strong> Информация о привилегиях — на сайте или по команде <code>/donate</code></li>
-            <li><strong>5.3.</strong> Чек оплаты — единственное доказательство при потере аккаунта.</li>
-          </ul>
+                  <h3>✅ Чат / Общение</h3>
+                  <ul>
+                    <li><strong>3.0.</strong> Запрещено оскорблять игроков. <span class="highlight">(Мут 15 мин – 10 дней)</span></li>
+                    <li><strong>3.1.</strong> Запрещено оскорблять администрацию. <span class="highlight">(Мут 15 мин – 10 дней)</span></li>
+                    <li><strong>3.2.</strong> Запрещено спамить/флудить. <span class="highlight">(Мут 10 мин – 5 дней)</span></li>
+                    <li><strong>3.3.</strong> Запрещено рекламировать другие сервера. <span class="highlight">(Мут по IP 10 дней)</span></li>
+                    <li><strong>3.4.</strong> Запрещено выманивать пароли обманом. <span class="highlight">(Блокировка 15 дней)</span></li>
+                    <li><strong>3.5.</strong> Запрещено выпрашивать у администрации. <span class="highlight">(Мут 1 час)</span></li>
+                    <li><strong>3.6.</strong> Запрещено распространять неверную информацию о проекте. <span class="highlight">(По п. 1.2)</span></li>
+                    <li><strong>3.7.</strong> Запрещён расизм и смежные темы. <span class="highlight">(Мут 1–10 дней)</span></li>
+                    <li><strong>3.8.</strong> Запрещено распространять информацию о багах/дюпах. <span class="highlight">(Мут 1 час или блокировка 30 дней)</span></li>
+                    <li><strong>3.9.</strong> Запрещено разжигать конфликт между народами. <span class="highlight">(Мут 1 час или п. 1.2)</span></li>
+                    <li><strong>3.9.1.</strong> Запрещено обсуждение политики в негативном контексте. <span class="highlight">(Мут 1 час)</span></li>
+                    <li><strong>3.9.2.</strong> Признание в использовании стороннего ПО в чате — основание для блокировки. <span class="highlight">(По п. 1.2)</span></li>
+                    <li><strong>3.9.3.</strong> Запрещено распространение, реклама, упоминание стороннего ПО. <span class="highlight">(По п. 1.2)</span></li>
+                  </ul>
 
-          <p style="margin-top: 12px; font-size: 13px; color: var(--muted);">Правила актуальны на 22.04.2026. Проверяйте обновления.</p>
+                  <h3>✅ Игровой процесс</h3>
+                  <div class="important">
+                    <strong>🚫 ЗАПРЕЩЕНЫ ЛЮБЫЕ ЧИТ-МОДИФИКАЦИИ С ФУНКЦИЯМИ:</strong>
+                    <ul style="margin-top: 6px;">
+                      <li>Reach/HitBox</li>
+                      <li>Criticals</li>
+                      <li>AutoTotem</li>
+                      <li>AutoJumpReset</li>
+                      <li>TriggerBot / AutoAttack (исключение: не реагирует на игроков)</li>
+                      <li>AutoPot</li>
+                      <li>AimAssist</li>
+                      <li>Killaura</li>
+                      <li>AutoShift</li>
+                      <li>FakeLag</li>
+                      <li>Velocity / AntiKnockBack</li>
+                      <li>Modified Packets</li>
+                      <li>Any Movement Function</li>
+                      <li>Any Other Cheat Function</li>
+                      <li>Любые функции, автоматизирующие взаимодействие с инвентарём</li>
+                    </ul>
+                  </div>
+
+                  <p><strong>🚫 ОБЯЗАТЕЛЬНЫЕ СЛУЖБЫ WINDOWS:</strong><br>
+                  Sysmain • Diagtrack • PcaSvc • DPS • Eventlog • AppInfo • BAM • Dusmsv • Cdpusersvc</p>
+
+                  <p><strong>🖱️ МАКРОСЫ И УТИЛИТЫ:</strong> запрещены (автокликеры и аналоги). Исключения — по согласованию с администрацией.</p>
+
+                  <p><strong>🌐 НАСТРОЙКИ СЕТИ:</strong> запрещены сторонние настройки, влияющие на честность соединения. Разрешены только программы оптимизации маршрута (например, ExitLag) для снижения пинга без нарушения баланса. <span class="highlight">(Блокировка от 15 дней или по IP)</span></p>
+
+                  <ul>
+                    <li><strong>4.0.1.</strong> Хранение читов также карается. <span class="highlight">(Блокировка от 15 дней)</span></li>
+                    <li><strong>4.0.2.</strong> Если у тимейта обнаружено стороннее ПО — администрация вправе заблокировать вас за соучастие. <span class="highlight">(Блокировка от 5 дней)</span></li>
+                    <li><strong>4.1.</strong> Запрещено строительство лаг-машин. <span class="highlight">(По п. 1.2)</span></li>
+                    <li><strong>4.2.</strong> Запрещено использование уязвимостей (дюпы, баги). <span class="highlight">(По п. 1.2)</span></li>
+                    <li><strong>4.3.</strong> Соблюдайте максимальное количество игроков в команде (указано в описании режима). <span class="highlight">(Блокировка всех участников от 5 дней)</span></li>
+                  </ul>
+
+                  <h3>✅ Другая информация</h3>
+                  <ul>
+                    <li><strong>5.0.</strong> Восстановить аккаунт можно бесплатно, если он привязан к ВК.</li>
+                    <li><strong>5.1.</strong> Донат покупается только на официальном сайте — <a href="https://aormio.net/" target="_blank" style="color: var(--accent);">https://aormio.net/</a></li>
+                    <li><strong>5.2.</strong> Информация о привилегиях — на сайте или по команде <code>/donate</code></li>
+                    <li><strong>5.3.</strong> Чек оплаты — единственное доказательство при потере аккаунта.</li>
+                  </ul>
+
+                  <p style="margin-top: 12px; font-size: 13px; color: var(--muted);">Правила актуальны. Проверяйте обновления.</p>
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+      </div>
+
+      <!-- Блок фичей -->
+      <div id="features" class="features">
+        <div class="feature"><b>ChatTime</b>Время [мм:сс] перед сообщениями — удобно ловить флуд.</div>
+        <div class="feature"><b>ChatNotify</b>Звук при нарушении правил в чате.</div>
+        <div class="feature"><b>CopyNameChat</b>Копирование ников за Shift + ЛКМ.</div>
+        <div class="feature"><b>ClickPunishment</b>Наказания по клику на ник в чате.</div>
+        <div class="feature"><b>AutoMessageRevise</b>Готовые шаблоны на читы.</div>
+        <div class="feature"><b>DiscordRPC + TimeChanger</b>Статус в Discord и смена времени суток.</div>
+      </div>
+
+      <div class="notice">
+        <span class="em">⚠️</span>
+        <div>
+          <b>Распространённая причина неработоспособности клиента</b>
+          <p>Несовместимость модов. Перед установкой проверьте список модов.</p>
         </div>
       </div>
-    </details>
+
+      <section class="contact" id="contact">
+        <h2>Нужна помощь?</h2>
+        <p>По вопросам и багам клиента обращайтесь в Discord.</p>
+        <a class="discord" href="https://discord.com/users/978268569177575465" target="_blank" rel="noopener">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+          Написать в Discord
+        </a>
+      </section>
+
+    </main>
+
+    <footer class="wrap">
+      <span class="upd">● Клиент поддерживается и обновляется</span><br />
+    </footer>
   </div>
 
-  <div class="notice">
-    <span class="em">⚠️</span>
-    <div>
-      <b>Распространённая причина неработоспособности клиента</b>
-      <p>Несовместимость модов. Перед установкой проверьте список модов.</p>
-    </div>
-  </div>
+  <script>
+    (function() {
+      // ===== ЧАСТИЦЫ НА КАНВАСЕ =====
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let particles = [];
+      const PARTICLE_COUNT = 140;
+      const MAX_SPEED = 0.8;
+      const CONNECTION_DIST = 140;
+      const PARTICLE_SIZE = 1.8;
 
-  <section class="contact" id="contact">
-    <h2>Нужна помощь?</h2>
-    <p>По вопросам и багам клиента обращайтесь в Discord.</p>
-    <a class="discord" href="https://discord.com/users/978268569177575465" target="_blank" rel="noopener">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-      Написать в Discord
-    </a>
-  </section>
+      function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+      }
 
-</main>
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * MAX_SPEED * 2;
+          this.vy = (Math.random() - 0.5) * MAX_SPEED * 2;
+          this.size = PARTICLE_SIZE + Math.random() * 1.2;
+          // оранжевый оттенок с разной яркостью
+          this.opacity = 0.3 + Math.random() * 0.5;
+        }
 
-<footer class="wrap">
-  <span class="upd">● Клиент поддерживается и обновляется</span><br />
-</footer>
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 123, 0, ${this.opacity})`;
+          ctx.fill();
+        }
+      }
+
+      function initParticles() {
+        particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          particles.push(new Particle());
+        }
+      }
+
+      function drawLines() {
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < CONNECTION_DIST) {
+              const alpha = 0.15 * (1 - dist / CONNECTION_DIST);
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(255, 123, 0, ${alpha})`;
+              ctx.lineWidth = 0.9;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      function animateParticles() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+        drawLines();
+        requestAnimationFrame(animateParticles);
+      }
+
+      function initParticlesSystem() {
+        resize();
+        initParticles();
+        animateParticles();
+      }
+
+      window.addEventListener('resize', () => {
+        resize();
+        initParticles();
+      });
+
+      initParticlesSystem();
+
+      // ===== СПЛЕШ =====
+      const splash = document.getElementById('splash');
+      const enterBtn = document.getElementById('enterBtn');
+
+      function hideSplash() {
+        splash.classList.add('hide');
+        setTimeout(() => {
+          splash.style.display = 'none';
+        }, 800);
+      }
+
+      enterBtn.addEventListener('click', hideSplash);
+      splash.addEventListener('click', function(e) {
+        if (e.target === splash || e.target.classList.contains('splash-footer')) {
+          hideSplash();
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === 'Escape') {
+          if (!splash.classList.contains('hide')) {
+            hideSplash();
+          }
+        }
+      });
+
+      // ===== ВКЛАДКИ =====
+      const tabs = document.querySelectorAll('.tab-btn');
+      const contents = {
+        faq: document.getElementById('faqTab'),
+        rules: document.getElementById('rulesTab')
+      };
+
+      function activateTab(tabId) {
+        Object.values(contents).forEach(el => el.classList.remove('active'));
+        if (tabId === 'faqTab') contents.faq.classList.add('active');
+        else if (tabId === 'rulesTab') contents.rules.classList.add('active');
+
+        tabs.forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.dataset.tab === tabId) btn.classList.add('active');
+        });
+      }
+
+      tabs.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const tabId = this.dataset.tab;
+          if (tabId) activateTab(tabId);
+        });
+      });
+
+      const activeBtn = document.querySelector('.tab-btn.active');
+      if (activeBtn) {
+        const id = activeBtn.dataset.tab;
+        if (id && contents[id]) {
+          Object.values(contents).forEach(el => el.classList.remove('active'));
+          contents[id].classList.add('active');
+        }
+      } else {
+        document.querySelector('.tab-btn[data-tab="faqTab"]')?.classList.add('active');
+        contents.faq?.classList.add('active');
+      }
+    })();
+  </script>
 
 </body>
 </html>
-```
