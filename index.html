@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>A-Tools Aormio — клиент для шерифов и модераторов</title>
   <style>
-    /* ----- базовые сбросы и переменные ----- */
     * {
       margin: 0;
       padding: 0;
@@ -40,7 +39,6 @@
       --red: #f87171;
     }
 
-    /* ----- КАНВАС ДЛЯ ЧАСТИЦ (поверх всего) ----- */
     #particles-canvas {
       position: fixed;
       top: 0;
@@ -51,7 +49,6 @@
       pointer-events: none;
     }
 
-    /* ----- СПЛЕШ-ЗАСТАВКА (fullscreen + blur) ----- */
     #splash {
       position: fixed;
       inset: 0;
@@ -133,7 +130,6 @@
       z-index: 2;
     }
 
-    /* ----- ОСНОВНОЙ КОНТЕНТ (поверх канваса) ----- */
     .main-content {
       position: relative;
       z-index: 1;
@@ -242,7 +238,6 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
     }
 
-    /* вкладки */
     .tabs {
       display: flex;
       gap: 6px;
@@ -296,7 +291,6 @@
       }
     }
 
-    /* фичи */
     .features {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -332,7 +326,6 @@
       margin-bottom: 26px;
     }
 
-    /* FAQ */
     .faq {
       display: flex;
       flex-direction: column;
@@ -463,7 +456,6 @@
       font-size: 13px;
     }
 
-    /* Правила — упрощенный блок с кнопкой-ссылкой */
     .rules-block {
       margin-bottom: 20px;
     }
@@ -523,6 +515,86 @@
       content: " ↗";
       font-size: 20px;
       margin-left: 6px;
+    }
+
+    .other-info {
+      background: rgba(13, 13, 13, 0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      margin: 32px 0 20px;
+    }
+
+    .other-info h3 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .other-info h3 .badge-icon {
+      font-size: 28px;
+    }
+
+    .other-info ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .other-info ul li {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text);
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .other-info ul li:hover {
+      border-color: var(--accent);
+      background: rgba(255, 123, 0, 0.06);
+    }
+
+    .other-info ul li .ip {
+      font-family: Consolas, "Courier New", monospace;
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .other-info ul li .label {
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    .other-info ul li .copy-badge {
+      margin-left: auto;
+      background: rgba(255, 123, 0, 0.12);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--accent);
+      border: 1px solid rgba(255, 123, 0, 0.2);
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+      user-select: none;
+    }
+
+    .other-info ul li .copy-badge:hover {
+      background: var(--accent);
+      color: #fff;
     }
 
     .contact {
@@ -603,15 +675,22 @@
         padding: 12px 28px;
         font-size: 16px;
       }
+      .other-info ul li {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .other-info ul li .copy-badge {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- ====== КАНВАС ДЛЯ ЧАСТИЦ ====== -->
   <canvas id="particles-canvas"></canvas>
 
-  <!-- ====== FULLSCREEN SPLASH С BLUR ====== -->
   <div id="splash" role="dialog" aria-label="Приветственная заставка">
     <div class="splash-content">
       <h1>A-Tools Aormio</h1>
@@ -621,7 +700,6 @@
     <div class="splash-footer">✦ нажмите, чтобы продолжить ✦</div>
   </div>
 
-  <!-- ====== ОСНОВНОЙ КОНТЕНТ ====== -->
   <div class="main-content">
     <header class="wrap">
       <div class="badge"><span class="dot"></span>Статус клиента</div>
@@ -635,13 +713,12 @@
 
     <main class="wrap">
 
-      <!-- Вкладки -->
       <div class="tabs" id="tabHeaders">
         <button class="tab-btn active" data-tab="faqTab"> FAQ</button>
         <button class="tab-btn" data-tab="rulesTab"> Правила</button>
+        <button class="tab-btn" data-tab="infoTab"> Другая информация</button>
       </div>
 
-      <!-- Содержимое вкладок -->
       <div id="faqTab" class="tab-content active">
         <section>
           <h2 class="section-title">Частые вопросы</h2>
@@ -707,12 +784,12 @@
       <div id="rulesTab" class="tab-content">
         <section>
           <h2 class="section-title">Правила сервера mc.aormio.ru</h2>
-          <p class="section-sub">Ознакомьтесь с правилами проекта перед игрой.</p>
+          <p class="section-sub">Ознакомьтесь с правилами проекта перед работой.</p>
 
           <div class="rules-block">
             <div class="rules-card">
-              <div class="icon">📜</div>
-              <h3>Полный текст правил</h3>
+              <div class="icon"></div>
+              <h3>Переход на официальную страницу Aormio с ставкой правил</h3>
               <p>Все правила и условия сервера собраны на отдельной странице.</p>
               <a href="https://aormio.ru/rules" target="_blank" rel="noopener noreferrer" class="rules-link">
                 Перейти к правилам
@@ -722,7 +799,44 @@
         </section>
       </div>
 
-      <!-- Блок фичей -->
+      <div id="infoTab" class="tab-content">
+        <section>
+          <h2 class="section-title">Другая информация</h2>
+          <p class="section-sub">Полезные данные о серверах и проекте</p>
+
+          <div class="other-info">
+            <h3>
+              <span class="badge-icon"></span>
+              Наши официальные IP сервера
+            </h3>
+            <ul>
+              <li>
+                <span class="label">Основной</span>
+                <span class="ip">mc.aormio.ru</span>
+                <span class="copy-badge" onclick="copyToClipboard('mc.aormio.ru')">Копировать</span>
+              </li>
+              <li>
+                <span class="label">Москва</span>
+                <span class="ip">msk.aormio.ru</span>
+                <span class="copy-badge" onclick="copyToClipboard('msk.aormio.ru')">Копировать</span>
+              </li>
+              <li>
+                <span class="label">Европа</span>
+                <span class="ip">eu.aormio.net</span>
+                <span class="copy-badge" onclick="copyToClipboard('eu.aormio.net')">Копировать</span>
+              </li>
+            </ul>
+          </div>
+
+          <div style="background: rgba(13,13,13,0.5); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-top: 12px;">
+            <p style="color: var(--muted); font-size: 15px;">
+              <span style="color: var(--accent); font-weight: 600;"></span> 
+              Все IP-адреса ведут на один проект. Выберите сервер с наименьшим пингом для комфортной игры.
+            </p>
+          </div>
+        </section>
+      </div>
+
       <div id="features" class="features">
         <div class="feature"><b>ChatTime</b>Время [мм:сс] перед сообщениями — удобно ловить флуд.</div>
         <div class="feature"><b>ChatNotify</b>Звук при нарушении правил в чате.</div>
@@ -758,7 +872,6 @@
 
   <script>
     (function() {
-      // ===== ЧАСТИЦЫ НА КАНВАСЕ =====
       const canvas = document.getElementById('particles-canvas');
       const ctx = canvas.getContext('2d');
       let width, height;
@@ -850,7 +963,6 @@
 
       initParticlesSystem();
 
-      // ===== СПЛЕШ =====
       const splash = document.getElementById('splash');
       const enterBtn = document.getElementById('enterBtn');
 
@@ -876,17 +988,18 @@
         }
       });
 
-      // ===== ВКЛАДКИ =====
       const tabs = document.querySelectorAll('.tab-btn');
       const contents = {
         faq: document.getElementById('faqTab'),
-        rules: document.getElementById('rulesTab')
+        rules: document.getElementById('rulesTab'),
+        info: document.getElementById('infoTab')
       };
 
       function activateTab(tabId) {
         Object.values(contents).forEach(el => el.classList.remove('active'));
         if (tabId === 'faqTab') contents.faq.classList.add('active');
         else if (tabId === 'rulesTab') contents.rules.classList.add('active');
+        else if (tabId === 'infoTab') contents.info.classList.add('active');
 
         tabs.forEach(btn => {
           btn.classList.remove('active');
@@ -911,6 +1024,45 @@
       } else {
         document.querySelector('.tab-btn[data-tab="faqTab"]')?.classList.add('active');
         contents.faq?.classList.add('active');
+      }
+
+      window.copyToClipboard = function(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => {
+            const badge = event.target;
+            const originalText = badge.textContent;
+            badge.textContent = '✅ Скопировано';
+            setTimeout(() => {
+              badge.textContent = originalText;
+            }, 2000);
+          }).catch(() => {
+            fallbackCopy(text);
+          });
+        } else {
+          fallbackCopy(text);
+        }
+      };
+
+      function fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          const badge = event.target;
+          const originalText = badge.textContent;
+          badge.textContent = '✅ Скопировано';
+          setTimeout(() => {
+            badge.textContent = originalText;
+          }, 2000);
+        } catch (err) {
+          alert('Не удалось скопировать. Скопируйте вручную: ' + text);
+        }
+        document.body.removeChild(textarea);
       }
     })();
   </script>
